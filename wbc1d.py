@@ -1,5 +1,6 @@
 import numpy as np
-import scipy as sp
+from scipy import sparse
+from scipy.sparse.linalg import spsolve
 import matplotlib.pyplot as plt
 
 import pdb
@@ -21,7 +22,7 @@ vbar = wc/beta  # average v-velocity without friction at steady state (beta*v=wc
 
 # methodology switchs
 bc = 'noslip'  # noslip or freeslip
-dmethod = 'mixed'  # forward, leapfrog, mixed, or backward
+dmethod = 'mixed'  # forward, leapfrog, or mixed
 
 # --------------------------------------------------------------------
 # initiate variables
@@ -56,9 +57,9 @@ elif bc=='freeslip':
 # iterate to solve the equation
 
 # construct linear equation matrix
-A = -2*sp.eye(xi+2) + \
-    sp.eye(xi+2, k=1) + \
-    sp.eye(xi+2, k=-1)
+A = -2*sparse.eye(xi+2) + \
+    sparse.eye(xi+2, k=1) + \
+    sparse.eye(xi+2, k=-1)
 # setup boundary condition
 # no penetration
 A[1, 0], A[1, 2], A[-2, -1], A[-2, -3] = 0, 0, 0, 0
@@ -110,7 +111,7 @@ for n in range(tn-1):
             B[-1] = dx**2*zetae[n]
             
         # solve linear equation
-        phi[n+1, :] = np.linalg.solve(A, B)
+        phi[n+1, :] = spsolve(A, B)
 
         # update v and zeta
         v[n+1, 1:-1] = (phi[n+1, 2:] - phi[n+1, :-2]) / (2*dx)
@@ -134,7 +135,7 @@ for n in range(tn-1):
             B[-1] = dx**2*zetae[n]
 
         # solve linear equation
-        phi1fw = np.linalg.solve(A, B)
+        phi1fw = spsolve(A, B)
 
     if (dmethod=='leapfrog') | (dmethod=='mixed'):
         B = np.zeros(xi+2)
@@ -152,7 +153,7 @@ for n in range(tn-1):
             B[0] = dx**2*zetaw[n]
             B[-1] = dx**2*zetae[n]
 
-        phi1lf = np.linalg.solve(A, B)
+        phi1lf = spsolve(A, B)
 
     if (dmethod=='forward'):
         phi[n+1, :] = phi1fw
@@ -166,9 +167,9 @@ for n in range(tn-1):
     zeta[n+1, 1:-1] = (phi[n+1, 2:] + phi[n+1, :-2] - 2*phi[n+1, 1:-1]) / (dx**2)
 
     # pdb.set_trace()
-    if (n % 50 == 0):
-        plt.plot(x, v[n+1, :])
-        plt.draw()
+    # if (n % 50 == 0):
+    #     plt.plot(x, v[n+1, :])
+    #     plt.draw()
 
 # plt.plot(phi)
 # plt.show(block=False)
