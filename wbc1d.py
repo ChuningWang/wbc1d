@@ -3,11 +3,10 @@ from scipy import sparse
 from scipy.sparse.linalg import spsolve
 import matplotlib.pyplot as plt
 
-import pdb
-
+# --------------------------------------------------------------------
 # basic parameters
 dt = 0.1*60*60  # delta t [s]
-tn = 1000  # number of time steps
+tn = 10000  # number of time steps
 
 L = 5e6  # length of basin [m]
 l = 1.  # basin unit length [bd]
@@ -80,12 +79,11 @@ elif bc=='freeslip':
     A[0, 1] = -2
     A[-1, -2] = -2
 
-plt.figure()
-plt.xlim(0, 1)
-plt.show(block=False)
+# plt.figure()
+# plt.xlim(0, 1)
+# plt.show(block=False)
 
 for n in range(tn-1):
-# for n in range(1):
     
     # claculate each term in the equation except d/dt
     # sverdrup
@@ -166,11 +164,8 @@ for n in range(tn-1):
     v[n+1, 1:-1] = (phi[n+1, 2:] - phi[n+1, :-2]) / (2*dx)
     zeta[n+1, 1:-1] = (phi[n+1, 2:] + phi[n+1, :-2] - 2*phi[n+1, 1:-1]) / (dx**2)
 
-    # pdb.set_trace()
     # if (n % 50 == 0):
     #     plt.plot(x, v[n+1, :])
     #     plt.draw()
 
-# plt.plot(phi)
-# plt.show(block=False)
 
