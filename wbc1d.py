@@ -1,4 +1,5 @@
 import numpy as np
+import scipy as sp
 
 # basic parameters
 dt = 24*60*60  # delta t [s]
@@ -59,7 +60,10 @@ for n in range(tn-1):
     if n==0:
         # first step always use forward scheme
         B = np.zeros(xi+2)
-        B[1:-1] =   phi[n, 2:] + phi[n, :-2] - 2*phi[n, 1:-1]
-                  + 2*dt*dx*dx*(-beta*phi_n_x + wc - gamma*phi_n_xx)
+        B[1:-1] = phi[n, 2:] + phi[n, :-2] - 2*phi[n, 1:-1] + \
+                  2*dt*dx*dx*(-beta*phi_n_x + wc - gamma*phi_n_xx)
         B[0] = 2*dx*vw[n]
         B[-1] = 2*dx*ve[n]
+        A = sp.sparse.eye(xi+2) + \
+            sp.sparse.eye(xi+1, k=1) + \
+            np.diag(np.ones(xi+1), k=-1)
