@@ -79,9 +79,9 @@ elif bc=='freeslip':
     A[0, 1] = -2
     A[-1, -2] = -2
 
-# plt.figure()
-# plt.xlim(0, 1)
-# plt.show(block=False)
+plt.figure()
+plt.xlim(0, 1)
+plt.show(block=False)
 
 for n in range(tn-1):
     
@@ -164,8 +164,8 @@ for n in range(tn-1):
     v[n+1, 1:-1] = (phi[n+1, 2:] - phi[n+1, :-2]) / (2*dx)
     zeta[n+1, 1:-1] = (phi[n+1, 2:] + phi[n+1, :-2] - 2*phi[n+1, 1:-1]) / (dx**2)
 
-    # if (n % 50 == 0):
-    #     plt.plot(x, v[n+1, :])
-    #     plt.draw()
+    if (n % 50 == 0):
+        plt.plot(x, v[n+1, :])
+        plt.draw()
 
 
