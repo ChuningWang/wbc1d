@@ -38,6 +38,8 @@ zeta = np.zeros((tn, xi+2))  # [s-1]
 
 # initial condition (if not zero)
 phi[0, :] = np.zeros(xi+2)  # [db2s-1]
+v[0, 1:-1] = (phi[0, 2:] - phi[0, :-2]) / (2*dx)
+zeta[0, 1:-1] = (phi[0, 2:] + phi[0, :-2] - 2*phi[0, 1:-1]) / (dx**2)
 
 # boundary condition
 # no penetration
