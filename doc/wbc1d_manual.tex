@@ -1,0 +1,169 @@
+\documentclass[12pt]{article}
+
+%% The graphicx package provides the includegraphics command.
+\usepackage{graphicx}
+%% The amssymb package provides various useful mathematical symbols
+\usepackage{amssymb}
+%% The amsthm package provides extended theorem environments
+%% \usepackage{amsthm}
+
+%% The lineno packages adds line numbers. Start line numbering with
+%% \begin{linenumbers}, end it with \end{linenumbers}. Or switch it on
+%% for the whole article with \linenumbers after \end{frontmatter}.
+% \usepackage{lineno}
+
+%% natbib.sty is loaded by default. However, natbib options can be
+%% provided with \biboptions{...} command. Following options are
+%% valid:
+
+%%   round  -  round parentheses are used (default)
+%%   square -  square brackets are used   [option]
+%%   curly  -  curly braces are used      {option}
+%%   angle  -  angle brackets are used    <option>
+%%   semicolon  -  multiple citations separated by semi-colon
+%%   colon  - same as semicolon, an earlier confusion
+%%   comma  -  separated by comma
+%%   numbers-  selects numerical citations
+%%   super  -  numerical citations as superscripts
+%%   sort   -  sorts multiple citations according to order in ref. list
+%%   sort&compress   -  like sort, but also compresses numerical citations
+%%   compress - compresses without sorting
+%%
+%% \biboptions{comma,round}
+
+% \biboptions{}
+
+\begin{document}
+
+%% Title, authors and addresses
+
+\title{1-D Simulation of Western Boundary Current}
+
+%% use the tnoteref command within \title for footnotes;
+%% use the tnotetext command for the associated footnote;
+%% use the fnref command within \author or \address for footnotes;
+%% use the fntext command for the associated footnote;
+%% use the corref command within \author for corresponding author footnotes;
+%% use the cortext command for the associated footnote;
+%% use the ead command for the email address,
+%% and the form \ead[url] for the home page:
+%%
+%% \title{Title\tnoteref{label1}}
+%% \tnotetext[label1]{}
+%% \author{Name\corref{cor1}\fnref{label2}}
+%% \ead{email address}
+%% \ead[url]{home page}
+%% \fntext[label2]{}
+%% \cortext[cor1]{}
+%% \address{Address\fnref{label3}}
+%% \fntext[label3]{}
+
+\author{Chuning Wang}
+
+% \begin{abstract}
+% %% Text of abstract
+% Suspendisse potenti. Suspendisse quis sem elit, et mattis nisl. Phasellus consequat erat eu velit rhoncus non pharetra neque auctor. Phasellus eu lacus quam. Ut ipsum dolor, euismod aliquam congue sed, lobortis et orci. Mauris eget velit id arcu ultricies auctor in eget dolor. Pellentesque suscipit adipiscing sem, imperdiet laoreet dolor elementum ut. Mauris condimentum est sed velit lacinia placerat. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Nullam diam metus, pharetra vitae euismod sed, placerat ultrices eros. Aliquam tincidunt dapibus venenatis. In interdum tellus nec justo accumsan aliquam. Nulla sit amet massa augue.
+% \end{abstract}
+
+% \begin{keyword}
+% Science \sep Publication \sep Complicated
+% %% keywords here, in the form: keyword \sep keyword
+% 
+% %% MSC codes here, in the form: \MSC code \sep code
+% %% or \MSC[2008] code \sep code (2000 is the default)
+% 
+% \end{keyword}
+
+\maketitle
+
+%% main text
+\section{Model setup}
+\label{sec:setup}
+
+The numerical model solved in this report is based on the 1-D vorticity equation
+
+\begin{equation}
+\frac{\partial}{\partial t}\phi_{xx} + \beta\phi_x = WC - \gamma\phi_{xx}
+\label{eq:vort}
+\end{equation}
+ 
+where the terms on the left side are the 'storage term' and `$\beta$ effect term', while terms on the right side are wind curl and friction, respectively. To solve this equation numerically, the spatial derivation terms must be discretized with finite difference method:
+
+\begin{equation}
+(\phi_x)_i^n = \frac{\phi_{i+1}^n-\phi_{i-1}^n}{2\Delta x}
+\label{eq:ddx}
+\end{equation}
+
+\begin{equation}
+(\phi_{xx})_i^n = \frac{\phi_{i+1}^n+\phi_{i-1}^n-\phi_i^n}{\Delta x^2}
+\label{eq:ddxx}
+\end{equation}
+
+and temporal derivation can discretized with either forward scheme
+
+\begin{equation}
+\frac{\partial}{\partial t}(\phi_{xx})_i = \frac{(\phi_{xx})_i^{n+1}-(\phi_{xx})_i^n}{\Delta t}
+\label{eq:ddtforw}
+\end{equation}
+
+or leap frog scheme
+
+\begin{equation}
+\frac{\partial}{\partial t}(\phi_{xx})_i = \frac{(\phi_{xx})_i^{n+1}-(\phi_{xx})_i^{n-1}}{2\Delta t}
+\label{eq:ddtlfrog}
+\end{equation}
+
+The superscript $n$ and subscript $i$ are indices for time steps and spatial grid points, respectively. Substitute Eq~\ref{eq:ddtforw} into Eq~\ref{eq:vort} and rearrange terms, we have
+
+\begin{equation}
+(\phi_{xx})_i^{n+1} = (\phi_{xx})_i^n + \Delta t(-\beta(\phi_x)_i^n + WC - \gamma(\phi_{xx})_i^n)
+\label{eq:vortdes}
+\end{equation}
+
+% \begin{figure}[h]
+% \centering\includegraphics[width=0.4\linewidth]{placeholder}
+% \caption{Figure caption}
+% \end{figure}
+
+%% The Appendices part is started with the command \appendix;
+%% appendix sections are then done as normal sections
+%% \appendix
+
+%% \section{}
+%% \label{}
+
+%% References
+%%
+%% Following citation commands can be used in the body text:
+%% Usage of \cite is as follows:
+%%   \cite{key}          ==>>  [#]
+%%   \cite[chap. 2]{key} ==>>  [#, chap. 2]
+%%   \citet{key}         ==>>  Author [#]
+
+%% References with bibTeX database:
+
+\bibliographystyle{model1-num-names}
+% \bibliography{sample.bib}
+
+%% Authors are advised to submit their bibtex database files. They are
+%% requested to list a bibtex style file in the manuscript if they do
+%% not want to use model1-num-names.bst.
+
+%% References without bibTeX database:
+
+% \begin{thebibliography}{00}
+
+%% \bibitem must have the following form:
+%%   \bibitem{key}...
+%%
+
+% \bibitem{}
+
+% \end{thebibliography}
+
+
+\end{document}
+
+%%
+%% End of file `elsarticle-template-1-num.tex'.
+              

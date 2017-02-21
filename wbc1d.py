@@ -95,7 +95,7 @@ for n in range(tn-1):
         # first step always use forward scheme
         B = np.zeros(xi+2)
         B[2:-2] = phi[n, 3:-1] + phi[n, 1:-3] - 2*phi[n, 2:-2] + \
-                  2*dt*dx*dx*(sv + wc + fc)
+                  dt*dx*dx*(sv + wc + fc)
         # setup boundary condition
         # no penetration
         B[1] = phiw[n]
@@ -119,7 +119,7 @@ for n in range(tn-1):
     if (dmethod=='forward') | (dmethod=='mixed'):
         B = np.zeros(xi+2)
         B[2:-2] = phi[n, 3:-1] + phi[n, 1:-3] - 2*phi[n, 2:-2] + \
-                  2*dt*dx*dx*(sv + wc + fc)
+                  dt*dx*dx*(sv + wc + fc)
         # setup boundary condition
         # no penetration
         B[1] = phiw[n]
