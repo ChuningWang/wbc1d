@@ -5,16 +5,17 @@ import matplotlib.pyplot as plt
 
 # --------------------------------------------------------------------
 # basic parameters
-dt = 0.1*60*60  # delta t [s]
+dt = 0.2*60*60  # delta t [s]
 tn = 10000  # number of time steps
+t = np.arange(0, dt*tn, dt)
 
-L = 5e6  # length of basin [m]
+L = 5.0e6  # length of basin [m]
 l = 1.  # basin unit length [bd]
-xi = int(1e4+1)  # number of horizontal grids
+xi = int(5e3+1)  # number of horizontal grids
 dx = l/(xi-1.)  # grid length in terms of bd [bd]
 
-beta = 1e-4  # Rossby parameter [bd-1s-1]
-gamma = 1e-6  # friction coefficient [s-1]
+beta = 1.0e-4  # Rossby parameter [bd-1s-1]
+gamma = 1.0e-6  # friction coefficient [s-1]
 wb_width = gamma/beta  # west boundary layer width [bd]
 wc = -1e-4  # wind curl [s-2]
 vbar = wc/beta  # average v-velocity without friction at steady state (beta*v=wc) [bd s-1]
@@ -27,7 +28,7 @@ dmethod = 'mixed'  # forward, leapfrog, or mixed
 # initiate variables
 # horizontal location
 # add 2 imaginary points, one at each end to deal with boundary condition
-x = np.linspace(-dx, l+dx, xi+2)  # [db]
+x = np.linspace(-dx/l, 1+dx/l, xi+2)  # [db]
 
 # stream funciton
 phi = np.zeros((tn, xi+2))  # [db2s-1]
@@ -136,7 +137,7 @@ for n in range(tn-1):
     if (dmethod=='leapfrog') | (dmethod=='mixed'):
         B = np.zeros(xi+2)
         B[2:-2] = phi[n-1, 3:-1] + phi[n-1, 1:-3] - 2*phi[n-1, 2:-2] + \
-                  2*dt*dx*dx*(sv + wc - fc)
+                  2*dt*dx*dx*(sv + wc + fc)
         # setup boundary condition
         # no penetration
         B[1] = phiw[n]
@@ -162,11 +163,33 @@ for n in range(tn-1):
     v[n+1, 1:-1] = (phi[n+1, 2:] - phi[n+1, :-2]) / (2*dx)
     zeta[n+1, 1:-1] = (phi[n+1, 2:] + phi[n+1, :-2] - 2*phi[n+1, 1:-1]) / (dx**2)
 
+# --------------------------------------------------------------------
+# make plots
+
+pltv = 0
+if pltv == 1:
+    # plot v interactively
+    plt.figure()
+    plt.show(block=False)
+    for i in range(len(t)):
+        if (i % 100 == 0):
+            plt.plot(v[i, :])
+            plt.draw()
 
 # plot the output as hovmuller diagram
-plt.figure()
-plt.pcolor(v)
-plt.show()
+plt_hov = 1
+if plt_hov == 1:
+    plt.figure()
+    plt.pcolor(t[::5]/24/60/60, x[::10], v[::5, ::10].T, cmap=plt.cm.RdYlBu_r)
+    plt.xlabel('Days')
+    plt.ylabel('Distance')
+    plt.xlim(0, t[-1]/24/60/60)
+    plt.ylim(0, 1)
+    plt.clim(-5, 5)
+    cb = plt.colorbar()
+    cb.ax.set_ylabel(r'V Velocity')
+    plt.savefig('v_hovmuller.tiff', format='tiff')
+    plt.close()
 
 
 
