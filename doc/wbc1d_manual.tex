@@ -8,6 +8,7 @@
 %% \usepackage{amsthm}
 \usepackage{amsmath}
 \usepackage{listings}
+% \usepackage{epstopdf}
 
 %% The lineno packages adds line numbers. Start line numbering with
 %% \begin{linenumbers}, end it with \end{linenumbers}. Or switch it on
@@ -244,14 +245,13 @@ Iteratively solve Eq~\ref{eq:matrix} for $n=n+1$ to move forward in temporal dom
 \item Forward scheme and leap frog scheme both works in this case. Here we solve the equation with both schemes, and average them to get a 'mixed' solution. Note that to use leap frog scheme two previous time steps are required - thus the first step (from $n=0$ to $n=1$) can only be solved with forward scheme.
 \end{itemize}
 
+\newpage
 \section{Results}
 
-
-
-% \begin{figure}[h]
-% \centering\includegraphics[width=0.4\linewidth]{placeholder}
-% \caption{Figure caption}
-% \end{figure}
+\begin{figure}[h]
+\centering\includegraphics[width=6in]{../v_hovmuller.png}
+\caption{Hovmuller Diagram of modeled velocity.}
+\end{figure}
 
 %% The Appendices part is started with the command \appendix;
 %% appendix sections are then done as normal sections

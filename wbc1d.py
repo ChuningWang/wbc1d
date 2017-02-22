@@ -22,7 +22,7 @@ vbar = wc/beta  # average v-velocity without friction at steady state (beta*v=wc
 
 # methodology switchs
 bc = 'noslip'  # noslip or freeslip
-dmethod = 'mixed'  # forward, leapfrog, or mixed
+dmethod = 'leapfrog'  # forward, leapfrog, or mixed
 
 # --------------------------------------------------------------------
 # initiate variables
@@ -166,7 +166,7 @@ for n in range(tn-1):
 # --------------------------------------------------------------------
 # make plots
 
-pltv = 0
+pltv = 1
 if pltv == 1:
     # plot v interactively
     plt.figure()
@@ -177,7 +177,7 @@ if pltv == 1:
             plt.draw()
 
 # plot the output as hovmuller diagram
-plt_hov = 1
+plt_hov = 0
 if plt_hov == 1:
     plt.figure()
     plt.pcolor(t[::5]/24/60/60, x[::10], v[::5, ::10].T, cmap=plt.cm.RdYlBu_r)
@@ -188,7 +188,7 @@ if plt_hov == 1:
     plt.clim(-5, 5)
     cb = plt.colorbar()
     cb.ax.set_ylabel(r'V Velocity')
-    plt.savefig('v_hovmuller.tiff', format='tiff')
+    plt.savefig('v_hovmuller_lfrog.png', format='png', dpi=900)
     plt.close()
 
 
