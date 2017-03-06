@@ -22,7 +22,7 @@ vbar = wc/beta  # average v-velocity without friction at steady state (beta*v=wc
 
 # methodology switchs
 bc = 'noslip'  # noslip or freeslip
-dmethod = 'trape'  # forward, leapfrog, trape, or AB
+dmethod = 'leapfrog'  # forward, leapfrog, trape, or AB
 
 # --------------------------------------------------------------------
 # initiate variables
