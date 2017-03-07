@@ -11,46 +11,54 @@ t = np.arange(0, dt*tn, dt)
 
 D = 200.  # water column depth [m]
 zi = int(2e3)  # number of vertical grids
-dz = D/(zi*1.)  # grid length [m]
+dz = -D/(zi*1.)  # grid length [m]
 
 f = 1.0e-4  # Coriolis parameter [s-1]
 Az0 = 1.0e-2  # viscosity [m2s-1]
 rho0 = 1.0e3  # water density [kg m-3]
-taow = 1.0e-2/rho0  # surface wind stress [m2s-2]
-taof = 1.0e-3/rho0  # bottom friction stress [m2s-2]
-pgf0 = -1.0e-3/rho0  # pressure gradient force [m s-2]
+tauw = 1.0e-2/rho0  # surface wind stress [m2s-2]
+tauf = 1.0e-3/rho0  # bottom friction stress [m2s-2]
+pgf0 = -0.0e-3/rho0  # pressure gradient force [m s-2]
 
 # methodology switchs
-dmethod = 'trape'  # forward, leapfrog, trape, or AB
+dmethod = 'trape'  # forward, backward, leapfrog, trape, or AB
 
 # --------------------------------------------------------------------
 # initiate variables
 # vertical grid
 # add 2 imaginary points, one at each end to deal with boundary condition
-z = np.linspace(-(D+0.5*dz), 0.5*dz, zi+2)  # [m]
+z = np.linspace(-0.5*dz, -(D-0.5*dz), zi+2)  # [m]
+z_tau = 0.5*(z[1:] + z[:-1])
 
-# at tao points
+# at tau points
 # viscosity
 Az = np.ones(zi+1)*Az0  # [m2s-1]
 
 # at rho points
 # velocity
-v = np.zeros((tn, zi+2))  # [m s-1]
+v = np.zeros((tn, zi+2), dtype=np.complex_)  # [m s-1]
+# friction
+fric = np.zeros((tn, zi+2), dtype=np.complex_)  # [m s-2]
 # stress
-tao = np.zeros((tn, zi+2))  # [m2s-2]
+tau = np.zeros((tn, zi+2), dtype=np.complex_)  # [m2s-2]
 
 # initial condition (if not zero)
 v[0, :] = 0  # [m s-1]
+fric[0, 1:-1] = (Az[1:]*v[0, 2:] + \
+                 -(Az[1:]+Az[:-1])*v[0, 1:-1] + \
+                 Az[:-1]*v[0, :-2] \
+                )/(dz*dz)
 
 # boundary condition
 # surface
-taos = np.ones(tn)*taow  # [m2s-2]
+taus = np.ones(tn)*tauw  # [m2s-2]
 # bottom
-taob = np.ones(tn)*taof  # [m2s-2]
+vb = np.zeros(tn)  # [m s-1]
+# taub = np.ones(tn)*tauf  # [m2s-2]
 
 # forcing
 # surface
-pgf = np.ones(tn)*pgf0  # []m s-2
+pgf = np.ones((tn, zi+2))*pgf0  # []m s-2
 
 # choose finite differencing parameters
 if dmethod == 'forward':
@@ -84,13 +92,104 @@ elif dmethod == 'AB':
     deld = 1.5
     epsd = -0.5
 
+# first step always trapezoidal
+alpd0 = 1.
+betd0 = 0.
+gamd0 = 0.5
+deld0 = 0.5
+epsd0 = 0.
+
 # --------------------------------------------------------------------
-# iterate to solve the equation
-
 # construct linear equation matrix
-diag1 = np.zeros(xi+2)
-diag1[1:-1] = 1 + dt*gamd*(f*1j + (Az[1:]+Az[:-1])/(dz*dz))
-# A = sparse.eye(xi+2)*(1+dt*gamd*(f*1j+)) + \
-#     sparse.eye(xi+2, k=1)*(1+dt*gamd*(gamma+beta*dx/2)) + \
-#     sparse.eye(xi+2, k=-1)*(1+dt*gamd*(gamma-beta*dx/2))
+diag0 = np.zeros(zi+2, dtype=np.complex_)
+diagp1 = np.zeros(zi+1)
+diagm1 = np.zeros(zi+1)
+diag0[1:-1] = 1. + dt*gamd*(f*1j + (Az[1:]+Az[:-1])/(dz*dz))
+diagp1[1:] = -dt*gamd*Az[1:]/(dz*dz)
+diagm1[:-1] = -dt*gamd*Az[:-1]/(dz*dz)
 
+A = sparse.diags([diag0, diagp1, diagm1], [0, 1, -1]).tocsr()
+
+# setup boundary condtion
+# surface match wind stress
+A[0, 0] = -1
+A[0, 1] = 1
+# bottom non-slip
+A[-1, -2], A[-1, -1] = 0.5, 0.5
+
+# for the first step
+# construct linear equation matrix
+diag0 = np.zeros(zi+2, dtype=np.complex_)
+diagp1 = np.zeros(zi+1)
+diagm1 = np.zeros(zi+1)
+diag0[1:-1] = 1. + dt*gamd0*(f*1j + (Az[1:]+Az[:-1])/(dz*dz))
+diagp1[1:] = -dt*gamd0*Az[1:]/(dz*dz)
+diagm1[:-1] = -dt*gamd0*Az[:-1]/(dz*dz)
+
+A0 = sparse.diags([diag0, diagp1, diagm1], [0, 1, -1]).tocsr()
+
+# setup boundary condtion
+# surface match wind stress
+A0[0, 0] = -1
+A0[0, 1] = 1
+# bottom noslip
+A0[-1, -2], A0[-1, -1] = 0.5, 0.5
+
+# iterate to solve the equation
+for n in range(tn-1):
+   
+    if n==0:
+        # first step always use trapezoidal scheme
+        B = np.zeros(zi+2, dtype=np.complex_)
+        B[1:-1] = alpd0*v[n, 1:-1] + \
+                  dt*(gamd0*pgf[n, 1:-1] + \
+                      deld0*(-f*1j*v[n, 1:-1] + fric[n, 1:-1] - pgf[n, 1:-1]) \
+                     )
+
+        # setup boundary condition
+        # surface match wind stress
+        B[0] = taus[n]/Az[0]
+        # bottom non-slip
+        B[-1] = vb[n]
+
+        # solve linear equation
+        v[n+1, :] = spsolve(A0, B)
+
+        # update fric
+        fric[n+1, 1:-1] = (Az[1:]*v[n+1, 2:] + \
+                           -(Az[1:]+Az[:-1])*v[n+1, 1:-1] + \
+                           Az[:-1]*v[n+1, :-2] \
+                          )/(dz*dz)
+        continue
+    
+    # --------------------------------------------------------------------
+
+    B = np.zeros(zi+2, dtype=np.complex_)
+    B[1:-1] = alpd*v[n, 1:-1] + \
+            betd*v[n-1, 1:-1] + \
+              dt*(gamd*pgf[n, 1:-1] + \
+                  deld*(-f*1j*v[n, 1:-1] + fric[n, 1:-1] - pgf[n, 1:-1]) + \
+                  epsd*(-f*1j*v[n-1, 1:-1] + fric[n-1, 1:-1] - pgf[n-1, 1:-1]) \
+                 )
+
+    # setup boundary condition
+    # surface match wind stress
+    B[0] = taus[n]/Az[0]
+    # bottom non-slip
+    B[-1] = vb[n]
+
+    # solve linear equation
+    v[n+1, :] = spsolve(A, B)
+
+    # update fric
+    fric[n+1, 1:-1] = (Az[1:]*v[n+1, 2:] + \
+                       -(Az[1:]+Az[:-1])*v[n+1, 1:-1] + \
+                       Az[:-1]*v[n+1, :-2] \
+                      )/(dz*dz)
+
+# make plots
+# Ekman spiral
+plt.figure()
+plt.plot(v[-1, :].imag, v[-1, :].real)
+plt.savefig('ekman_spiral.png', format='png', dpi=900)
+plt.close()
