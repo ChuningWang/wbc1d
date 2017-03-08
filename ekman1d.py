@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 # --------------------------------------------------------------------
 # basic parameters
 dt = 0.2*60*60  # delta t [s]
-tn = 10000  # number of time steps
+tn = 5000  # number of time steps
 t = np.arange(0, dt*tn, dt)
 
 D = 200.  # water column depth [m]
@@ -18,7 +18,10 @@ Az0 = 1.0e-2  # viscosity [m2s-1]
 rho0 = 1.0e3  # water density [kg m-3]
 tauw = 1.0e-2/rho0  # surface wind stress [m2s-2]
 tauf = 1.0e-3/rho0  # bottom friction stress [m2s-2]
-pgf0 = -0.0e-3/rho0  # pressure gradient force [m s-2]
+pgf0 = -3.0e-3/rho0  # pressure gradient force [m s-2]
+
+DE = np.pi*np.sqrt(2*Az0/f)  # average Ekman depth [m]
+vg = pgf0/f  # geostrophic velocity [m s-1]
 
 # methodology switchs
 dmethod = 'trape'  # forward, backward, leapfrog, trape, or AB
@@ -167,8 +170,8 @@ for n in range(tn-1):
     B = np.zeros(zi+2, dtype=np.complex_)
     B[1:-1] = alpd*v[n, 1:-1] + \
             betd*v[n-1, 1:-1] + \
-              dt*(gamd*pgf[n, 1:-1] + \
-                  deld*(-f*1j*v[n, 1:-1] + fric[n, 1:-1] - pgf[n, 1:-1]) + \
+              dt*(gamd*(-pgf[n+1, 1:-1]) + \
+                  deld*(-f*1j*v[n, 1:-1] + fric[n, 1:-1] - pgf[n+1, 1:-1]) + \
                   epsd*(-f*1j*v[n-1, 1:-1] + fric[n-1, 1:-1] - pgf[n-1, 1:-1]) \
                  )
 
@@ -188,8 +191,52 @@ for n in range(tn-1):
                       )/(dz*dz)
 
 # make plots
+# interactive
+pltv = 1
+if pltv == 1:
+    # plot v interactively
+    plt.figure()
+    plt.show(block=False)
+    for i in range(len(t)):
+        if (i % 10 == 0):
+            plt.clf()
+            plt.plot(v[i, :].real, z)
+            plt.plot(v[i, :].imag, z)
+            plt.xlim(-0.06, 0.06)
+            plt.draw()
+
 # Ekman spiral
-plt.figure()
-plt.plot(v[-1, :].imag, v[-1, :].real)
-plt.savefig('ekman_spiral.png', format='png', dpi=900)
-plt.close()
+plt_spiral = 0
+if plt_spiral == 1:
+    plt.figure()
+    plt.plot(v[-1, :].imag, v[-1, :].real)
+    plt.savefig('ekman_spiral.png', format='png', dpi=900)
+    plt.close()
+
+# hovmoller
+plt_hov = 0
+if plt_hov == 1:
+    plt.figure()
+    plt.pcolor(t[::5]/24/60/60, z[::10], v[::5, ::10].real.T, cmap=plt.cm.RdYlBu_r)
+    plt.xlabel('Days')
+    plt.ylabel('Depth')
+    plt.xlim(0, t[-1]/24/60/60)
+    plt.ylim(-D, 0)
+    plt.clim(-0.06, 0.06)
+    cb = plt.colorbar()
+    cb.ax.set_ylabel(r'U Velocity')
+    plt.savefig('u_' + dmethod + '.png', format='png', dpi=900)
+    plt.close()
+
+    plt.figure()
+    plt.pcolor(t[::5]/24/60/60, z[::10], v[::5, ::10].imag.T, cmap=plt.cm.RdYlBu_r)
+    plt.xlabel('Days')
+    plt.ylabel('Depth')
+    plt.xlim(0, t[-1]/24/60/60)
+    plt.ylim(-D, 0)
+    plt.clim(-0.06, 0.06)
+    cb = plt.colorbar()
+    cb.ax.set_ylabel(r'U Velocity')
+    plt.savefig('v_' + dmethod + '.png', format='png', dpi=900)
+    plt.close()
+
