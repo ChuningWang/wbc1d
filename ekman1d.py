@@ -199,7 +199,7 @@ if pltv == 1:
     plt.show(block=False)
     for i in range(len(t)):
         if (i % 10 == 0):
-            plt.clf()
+            plt.gca().cla()
             plt.plot(v[i, :].real, z)
             plt.plot(v[i, :].imag, z)
             plt.xlim(-0.06, 0.06)
