@@ -1,0 +1,106 @@
+\documentclass{article}
+
+\usepackage[margin=1.75in]{geometry}
+\usepackage{natbib}
+\usepackage{graphicx}
+
+\title{1-D Simulation of Ekman Layers}
+
+\author{Chuning Wang}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\input{~/Dropbox/latex/units.tex}
+
+\section{Ekman layer}
+The Ekman layer is the layer in a fluid where there is a force balance between pressure gradient force, Coriolis force and lateral friction. The mathematical formation is
+
+\begin{equation}
+-f\cdot v=\frac{1}{\rho}\frac{\partial}{\partial x}p+\frac{\partial}{\partial z}(A_z\frac{\partial}{\partial z}u)
+\label{eq:ek1}
+\end{equation}
+
+\begin{equation}
+f\cdot u=\frac{1}{\rho}\frac{\partial}{\partial y}p+\frac{\partial}{\partial z}(A_z\frac{\partial}{\partial z}v)
+\label{eq:ek2}
+\end{equation}
+
+where $u$ and $v$ are velocities in the $x$ and $y$ directions, respectively, $f$ is the Coriolis parameter, $\rho$ is water density, $p$ is pressure, $A_z$ is the eddy viscosity. To simplify the equations, rewrite Eq~\ref{eq:ek1} and~\ref{eq:ek2} using complex notation
+
+\begin{equation}
+i\cdot f\vec{u}=-\frac{1}{\rho}\nabla p+\frac{\partial}{\partial z}(A_z\frac{\partial}{\partial z}\vec{u})
+\end{equation}
+
+where $\vec{u}=u+iv$ is the complex velocity. Since time stepping is used to achieve Ekman balance, a time dependence term is also added
+
+\begin{equation}
+\frac{\partial}{\partial t}\vec{u}+i\cdot f\vec{u}=-\frac{1}{\rho}\nabla p+\frac{\partial}{\partial z}(A_z\frac{\partial}{\partial z}\vec{u}).
+\end{equation}
+
+For simplicity we assume $\rho=\rho_0$ is a constant, $\nabla p$ is dependent on time $t$ (tidal pressure gradient) and depth $z$ (baroclinicity), and $A_z$ is only a function of $z$.\\
+
+\section{Model setup}
+Formulation of finite difference and discretization are described in the previous report thus not repeated here. In this model the major difference from the 1-D Western Boundary Current case is the grid setup. As shown in Fig~\ref{fig:grid}, the whole water column is divided into n cells, and the weight of each cell is denoted by asterisks. Sea surface is located $0.5\Delta z$ above the uppermost grid point. For velocity components and body forces (Coriolis force, pressure gradient force), values are calculated at weight of each cell; for surface forces (viscous friction/diffusion), values are calculate at boundary of each grid cell. Thus, the discretized form of friction term becomes
+
+\begin{equation}
+[\frac{\partial}{\partial z}(A_z\frac{\partial}{\partial z}\vec{u})]_i=\frac{A_z^{i-1/2}(\vec{u}_{i-1}^n-\vec{u}_i^n)-A_z^{i+1/2}(\vec{u}_i^n-\vec{u}_{i+1}^n)}{\Delta z^2}
+\end{equation}
+
+where $A_z^{i-1/2}=0.5(A_{z,i-1}+A_{z,i})$ and $A_z^{i+1/2}=0.5(A_{z,i}+A_{z,i+1})$ are eddy viscosity at upper and lower surface of each cell. For other terms, discretization formulation is similar to that of numerical exercise 1.\\
+
+\begin{figure}
+  \centerline{\includegraphics[width=2in]{grid.png}}
+  \caption{Grid cell setup in this numerical excercise. \citep{kampf2010advanced}}
+  \label{fig:grid}
+\end{figure}
+
+\subsection{Boundary condition}
+The surface ocean is forced by wind stress near the air-water interface
+
+\begin{equation}
+\vec{\tau}_{wind}=\vec{\tau}_{-1/2}=\frac{A_{z,-1/2}(\vec{u}_{-1}-\vec{u}_{0})}{\Delta z}
+\end{equation}
+
+and the bottom is non-slip
+
+\begin{equation}
+\vec{u}_{bottom}=\vec{u}_{n+1/2}=0.5(\vec{u}_n+\vec{u}_{n+1})=0.
+\end{equation}
+
+Note that at both surface and bottom the condition is applied at the surface instead of the weight of a grid cell, which is the major difference from numerical exercise 1.\\
+
+\section{Results}
+\subsection{Case 1}
+Firstly, we test the model setup with a simpler case - constant pressure gradient and eddy viscosity. Model parameters are chosen as $f=1\times10^{-4}$~s$^{-1}$, $A_z=1\times10^{-2}$~m$^2$s$^{-1}$, $\frac{1}{\rho}\nabla p=-3\times10^{-6}$ m$^2$s$^{-1}$, and $\vec{\tau}_{wind}=1\times10^{-2}$ m$^2$s$^{-1}$. The model has 2000 vertical grid points, and it is run with $dt=0.2$ hr for 1000 time steps. The fully developed structure of Ekman spiral is shown in Fig~\ref{fig:spiral}. Temporal evolution of velocity profiles are shown in Fig~\ref{fig:u} and~\ref{fig:v}. Both surface and bottom Ekman layers are developed. Maximum velocity appears near the surface,
+
+\begin{figure}
+  \centerline{\includegraphics[width=5in]{../ekman_spiral.png}}
+  \caption{Velocity vector of the last time step.}
+  \label{fig:spiral}
+\end{figure}
+
+\begin{figure}
+  \centerline{\includegraphics[width=5in]{../u_trape.png}}
+  \caption{Hovm\"{o}ller diagram of U velocity.}
+  \label{fig:u}
+\end{figure}
+
+\begin{figure}
+  \centerline{\includegraphics[width=5in]{../v_trape.png}}
+  \caption{Hovm\"{o}ller diagram of V velocity.}
+  \label{fig:v}
+\end{figure}
+
+%----------------------------------------------------------------------------------------
+%	BIBLIOGRAPHY
+%----------------------------------------------------------------------------------------
+
+\clearpage
+\bibliographystyle{apalike}
+\bibliography{ekman1d}
+
+\end{document}

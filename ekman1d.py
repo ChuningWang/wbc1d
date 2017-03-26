@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 # --------------------------------------------------------------------
 # basic parameters
 dt = 0.2*60*60  # delta t [s]
-tn = 5000  # number of time steps
+tn = 1000  # number of time steps
 t = np.arange(0, dt*tn, dt)
 
 D = 200.  # water column depth [m]
@@ -18,7 +18,7 @@ Az0 = 1.0e-2  # viscosity [m2s-1]
 rho0 = 1.0e3  # water density [kg m-3]
 tauw = 1.0e-2/rho0  # surface wind stress [m2s-2]
 tauf = 1.0e-3/rho0  # bottom friction stress [m2s-2]
-pgf0 = -3.0e-3/rho0  # pressure gradient force [m s-2]
+pgf0 = -1.0e-3/rho0  # pressure gradient force [m s-2]
 
 DE = np.pi*np.sqrt(2*Az0/f)  # average Ekman depth [m]
 vg = pgf0/f  # geostrophic velocity [m s-1]
@@ -192,7 +192,7 @@ for n in range(tn-1):
 
 # make plots
 # interactive
-pltv = 1
+pltv = 0
 if pltv == 1:
     # plot v interactively
     plt.figure()
@@ -206,15 +206,18 @@ if pltv == 1:
             plt.draw()
 
 # Ekman spiral
-plt_spiral = 0
+plt_spiral = 1
 if plt_spiral == 1:
     plt.figure()
     plt.plot(v[-1, :].imag, v[-1, :].real)
+    plt.xlim(-0.1, 0.1)
+    plt.ylim(-0.1, 0.1)
+    plt.title('Velocity Vector')
     plt.savefig('ekman_spiral.png', format='png', dpi=900)
     plt.close()
 
 # hovmoller
-plt_hov = 0
+plt_hov = 1
 if plt_hov == 1:
     plt.figure()
     plt.pcolor(t[::5]/24/60/60, z[::10], v[::5, ::10].real.T, cmap=plt.cm.RdYlBu_r)
@@ -222,9 +225,9 @@ if plt_hov == 1:
     plt.ylabel('Depth')
     plt.xlim(0, t[-1]/24/60/60)
     plt.ylim(-D, 0)
-    plt.clim(-0.06, 0.06)
+    plt.clim(-0.1, 0.1)
     cb = plt.colorbar()
-    cb.ax.set_ylabel(r'U Velocity')
+    cb.ax.set_ylabel(r'Velocity')
     plt.savefig('u_' + dmethod + '.png', format='png', dpi=900)
     plt.close()
 
@@ -234,9 +237,9 @@ if plt_hov == 1:
     plt.ylabel('Depth')
     plt.xlim(0, t[-1]/24/60/60)
     plt.ylim(-D, 0)
-    plt.clim(-0.06, 0.06)
+    plt.clim(-0.1, 0.1)
     cb = plt.colorbar()
-    cb.ax.set_ylabel(r'U Velocity')
+    cb.ax.set_ylabel(r'Velocity')
     plt.savefig('v_' + dmethod + '.png', format='png', dpi=900)
     plt.close()
 
