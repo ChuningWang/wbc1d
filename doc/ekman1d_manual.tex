@@ -47,7 +47,7 @@ For simplicity we assume $\rho=\rho_0$ is a constant, $\nabla p$ is dependent on
 Formulation of finite difference and discretization are described in the previous report thus not repeated here. In this model the major difference from the 1-D Western Boundary Current case is the grid setup. As shown in Fig~\ref{fig:grid}, the whole water column is divided into n cells, and the weight of each cell is denoted by asterisks. Sea surface is located $0.5\Delta z$ above the uppermost grid point. For velocity components and body forces (Coriolis force, pressure gradient force), values are calculated at weight of each cell; for surface forces (viscous friction/diffusion), values are calculate at boundary of each grid cell. Thus, the discretized form of friction term becomes
 
 \begin{equation}
-[\frac{\partial}{\partial z}(A_z\frac{\partial}{\partial z}\vec{u})]_i=\frac{A_z^{i-1/2}(\vec{u}_{i-1}^n-\vec{u}_i^n)-A_z^{i+1/2}(\vec{u}_i^n-\vec{u}_{i+1}^n)}{\Delta z^2}
+[\frac{\partial}{\partial z}(A_z\frac{\partial}{\partial z}\vec{u})]_i^n=\frac{A_z^{i-1/2}(\vec{u}_{i-1}^n-\vec{u}_i^n)-A_z^{i+1/2}(\vec{u}_i^n-\vec{u}_{i+1}^n)}{\Delta z^2}
 \end{equation}
 
 where $A_z^{i-1/2}=0.5(A_{z,i-1}+A_{z,i})$ and $A_z^{i+1/2}=0.5(A_{z,i}+A_{z,i+1})$ are eddy viscosity at upper and lower surface of each cell. For other terms, discretization formulation is similar to that of numerical exercise 1.\\
@@ -75,17 +75,21 @@ Note that at both surface and bottom the condition is applied at the surface ins
 
 \section{Results}
 \subsection{Case 1}
-Firstly, we test the model setup with a simpler case - constant pressure gradient and eddy viscosity. Model parameters are chosen as $f=1\times10^{-4}$~s$^{-1}$, $A_z=1\times10^{-2}$~m$^2$s$^{-1}$, $\frac{1}{\rho}\nabla p=-3\times10^{-6}$ m$^2$s$^{-1}$, and $\vec{\tau}_{wind}=1\times10^{-2}$ m$^2$s$^{-1}$. The model has 2000 vertical grid points, and it is run with $dt=0.2$ hr for 1000 time steps. The fully developed structure of Ekman spiral is shown in Fig~\ref{fig:spiral}. Temporal evolution of velocity profiles are shown in Fig~\ref{fig:u} and~\ref{fig:v}. Both surface and bottom Ekman layers are developed. Maximum velocity appears near the surface,
+Firstly, we test the model setup with a simpler case - constant pressure gradient and eddy viscosity. Model parameters are chosen as $f=1\times10^{-4}$~s$^{-1}$, $A_z=1\times10^{-2}$~m$^2$s$^{-1}$, $\frac{1}{\rho}\nabla p=-3\times10^{-6}$ m$^2$s$^{-1}$, and $\vec{\tau}_{wind}=1\times10^{-2}$ m$^2$s$^{-1}$. The model has 2000 vertical grid points, and it is run with $dt=0.2$ hr for 1000 time steps.\\
+
+The fully developed structure of Ekman spiral is shown in Fig~\ref{fig:spiral}. Temporal evolution of velocity profiles are shown in Fig~\ref{fig:u} and~\ref{fig:v}. Both surface and bottom Ekman layers are developed.Since the governing equation is time dependent, signals of inertial oscillation also appears in the final solution; to filter out this signal, the vector plot in Fig~\ref{fig:spiral} is averaged over one inertial period.\\
+
+Velocity is maximum near the surface, 45 degrees right to surface wind stress. It then decreases and turns right to form the surface spiral. Below the bottom Ekman depth (dash line in Fig~\ref{fig:u} and~\ref{fig:v}) and above the bottom Ekman depth is geostrophic flow, which is mixed with inertial oscillation signal. Below the bottom Ekman depth is the bottom Ekman layer, a reverse spiral (Fig~\ref{fig:spiral}), the velocity of which decreases towards zero due to non-slip bottom boundary condition.\\
 
 \begin{figure}
   \centerline{\includegraphics[width=5in]{../ekman_spiral.png}}
-  \caption{Velocity vector of the last time step.}
+  \caption{Velocity vector of the last inertial period.}
   \label{fig:spiral}
 \end{figure}
 
 \begin{figure}
   \centerline{\includegraphics[width=5in]{../u_trape.png}}
-  \caption{Hovm\"{o}ller diagram of U velocity.}
+  \caption{Hovm\"{o}ller diagram of U velocity. Dash lines denote surface and bottom Ekman depth.}
   \label{fig:u}
 \end{figure}
 
@@ -94,6 +98,30 @@ Firstly, we test the model setup with a simpler case - constant pressure gradien
   \caption{Hovm\"{o}ller diagram of V velocity.}
   \label{fig:v}
 \end{figure}
+
+\section{Case 2}
+For the second testing case, we use a slightly complicated set of parameters. Firstly, eddy viscosity $A_z$ increases linearly from bottom ($10^{-3}$ m$^2$s$^{-1}$) to surface ($10^{-2}$ m$^2$s$^{-1}$). This has very little influence on the surface, however, bottom Ekman layer is nearly 10 times thinner due to decreased $A_z$. Secondly, pressure gradient force is characterized with a fortnightly tidal cycle (with a period of 14 days). Besides, tidal forcing is also baroclinic, which increases from bottom (0) to surface ($-3.0\times10^{-3}\hat{i}+3.0\times10^{-3}\hat{j}$ m$^2$s$^{-1}$). Lastly, we use the first tidal cycle to spin-up the model, thus wind stress ($-10^{-2}\hat{j}$ m$^2$s$^{-1}$) only kicks in after the 14th day.\\
+
+Results are shown in Fig~\ref{fig:spiral2}, \ref{fig:u2} and~\ref{fig:v2}. Overall it behaves as expected. With this set of parameters, modeled velocity is a combination of pressure gradient driven tidal flow and surface Ekman flow.\\
+
+\begin{figure}
+  \centerline{\includegraphics[width=5in]{../ekman_spiral2.png}}
+  \caption{Velocity vector of the last inertial period.}
+  \label{fig:spiral2}
+\end{figure}
+
+\begin{figure}
+  \centerline{\includegraphics[width=5in]{../u_trape2.png}}
+  \caption{Hovm\"{o}ller diagram of U velocity.}
+  \label{fig:u2}
+\end{figure}
+
+\begin{figure}
+  \centerline{\includegraphics[width=5in]{../v_trape2.png}}
+  \caption{Hovm\"{o}ller diagram of V velocity.}
+  \label{fig:v2}
+\end{figure}
+
 
 %----------------------------------------------------------------------------------------
 %	BIBLIOGRAPHY
